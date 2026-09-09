@@ -1,7 +1,19 @@
-# FinanPro V2 — versión funcional 1.1.0
+# FinanPro V2 — Supabase 1.2.0
 
-Incluye dashboard, registro de ingresos/gastos, categorías, fechas, movimientos, eliminación, diagnóstico básico y metas de ahorro. Los datos se guardan localmente en el teléfono mediante localStorage.
+Conecta la app con el proyecto Supabase de FinanPro.
 
-Para actualizar: reemplaza los archivos del repositorio en `main`. GitHub Actions ejecutará `Build FinanPro APK`; cuando termine en verde, descarga el artefacto `FinanPro-apk` e instala `app-debug.apk`.
+Incluye:
+- Inicio de sesión anónimo de Supabase.
+- Cuentas reales.
+- Movimientos reales de ingresos y gastos.
+- Categorías desde Supabase.
+- Metas y aportes reales.
+- RLS para que cada usuario solo vea sus propios datos.
+- Trigger para actualizar automáticamente el saldo de la cuenta.
+- Trigger para acumular aportes en las metas.
+- Persistencia en la nube.
 
-Esta versión todavía no sincroniza con Supabase. La conexión segura con Supabase y autenticación será la siguiente fase.
+IMPORTANTE:
+1. En Supabase Dashboard activa Authentication > Providers > Anonymous Sign-Ins.
+2. El APK usa únicamente la publishable key; nunca uses service_role en la app.
+3. El esquema de base de datos y RLS ya fueron preparados en el proyecto.
