@@ -1,13 +1,7 @@
-# FinanPro V2
+# FinanPro V2 — versión funcional 1.1.0
 
-Base Android de FinanPro con Capacitor y pipeline de GitHub Actions.
+Incluye dashboard, registro de ingresos/gastos, categorías, fechas, movimientos, eliminación, diagnóstico básico y metas de ahorro. Los datos se guardan localmente en el teléfono mediante localStorage.
 
-## APK
-En GitHub: **Actions → Build FinanPro APK → Run workflow**.
-Cuando termine correctamente, abre la ejecución y descarga **FinanPro-apk**.
+Para actualizar: reemplaza los archivos del repositorio en `main`. GitHub Actions ejecutará `Build FinanPro APK`; cuando termine en verde, descarga el artefacto `FinanPro-apk` e instala `app-debug.apk`.
 
-## Supabase
-Proyecto: `jbycxsqgyzdksxsbitfu`
-URL: `https://jbycxsqgyzdksxsbitfu.supabase.co`
-
-No incluir nunca una `service_role key` dentro de la aplicación. La integración real de cuentas, movimientos, metas, deudas, estadísticas, calendario, recordatorios y asistente se añadirá sobre esta base.
+Esta versión todavía no sincroniza con Supabase. La conexión segura con Supabase y autenticación será la siguiente fase.

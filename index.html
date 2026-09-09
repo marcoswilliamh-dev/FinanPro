@@ -1,34 +1,58 @@
 <!doctype html>
-<html lang="es"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050b10"><title>FinanPro V2</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#050b10;color:#f5fbff;font-family:Arial,sans-serif}
-.app{max-width:430px;margin:auto;min-height:100vh;padding:18px 16px 92px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
-.logo{font-size:22px;font-weight:800}.v2{color:#00e39a}.avatar{width:38px;height:38px;border-radius:50%;background:#00e39a;color:#03100c;display:grid;place-items:center;font-weight:800}
-h1{font-size:25px;margin:4px 0}.muted{color:#78939f}.card{background:#09151d;border:1px solid #122630;border-radius:18px;padding:18px;margin:12px 0}
-.label{font-size:13px;color:#78939f}.money{font-size:31px;font-weight:800;margin:7px 0 16px}.green{color:#00e39a}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{background:#0c1a22;border-radius:14px;padding:13px}.mini b{display:block;font-size:18px;margin-top:5px}
-.alert{border-left:3px solid #ffae2e}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:13px 0}
-.pill{padding:6px 9px;border-radius:10px;background:#10232c;font-size:12px}.progress{height:9px;background:#12242c;border-radius:10px;overflow:hidden}.bar{height:100%;background:#00e39a;width:41%}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:#071118ee;backdrop-filter:blur(14px);border-top:1px solid #15303a;display:flex;justify-content:space-around;padding:12px 6px}
-nav button{background:none;border:0;color:#78939f;font-size:11px}nav button.active{color:#00e39a}.icon{font-size:20px;display:block;margin-bottom:3px}
-.fab{position:fixed;right:max(18px,calc((100vw - 430px)/2 + 18px));bottom:78px;width:58px;height:58px;border:0;border-radius:50%;background:#00e39a;color:#03100c;font-size:30px;font-weight:800}
-</style></head>
-<body><div class="app">
-<header><div class="logo">FinanPro <span class="v2">V2</span></div><div class="avatar">MW</div></header>
-<div class="muted">Inicio</div><h1>Hola, Marcos 👋</h1>
-<section class="card"><div class="label">Patrimonio total</div><div class="money">S/ 8,450.00</div>
-<div class="grid"><div class="mini"><span class="label">Disponible</span><b class="green">S/ 5,280</b></div><div class="mini"><span class="label">Por recibir</span><b>S/ 1,200</b></div>
-<div class="mini"><span class="label">Por pagar</span><b>S/ 1,970</b></div><div class="mini"><span class="label">Proyección</span><b>S/ 7,820</b></div></div></section>
-<section class="card alert"><div class="label">⚠️ Atención</div><div class="row"><span>Transporte aumentó <b>27%</b> este mes</span><span class="pill">Ver</span></div></section>
-<section class="card"><div class="row"><div><b>Próximos pagos</b><div class="muted">Servicios y cuotas</div></div><span class="pill">3 pendientes</span></div>
-<div class="row"><span>Internet</span><b>S/ 89</b></div><div class="row"><span>Tarjeta</span><b>S/ 420</b></div><div class="row"><span>Cuota</span><b>S/ 350</b></div></section>
-<section class="card"><div class="row"><div><b>🎯 Suzuki Jimny</b><div class="muted">Meta de ahorro</div></div><b class="green">41%</b></div>
-<div class="progress"><div class="bar"></div></div><div class="row"><span>S/ 18,500</span><span class="muted">S/ 45,000</span></div></section>
-</div>
-<button class="fab">+</button><nav>
-<button class="active"><span class="icon">⌂</span>Inicio</button><button><span class="icon">◉</span>Finanzas</button>
-<button><span class="icon">↕</span>Movimientos</button><button><span class="icon">🎯</span>Metas</button><button><span class="icon">☰</span>Más</button>
-</nav></body></html>
+:root{--bg:#050b10;--card:#09151d;--green:#00e39a;--text:#f5fbff;--muted:#78939f;--red:#ff4e61}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.app{max-width:430px;margin:auto;min-height:100vh;padding:18px 16px 92px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.logo{font-size:22px;font-weight:800}.logo span{color:var(--green)}.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#13252d;font-weight:800}
+h1{font-size:28px;margin:4px 0}.muted,.label{color:var(--muted)}.card{background:var(--card);border:1px solid #12252e;border-radius:18px;padding:16px;margin:12px 0}
+.hero{padding:20px}.amount{font-size:30px;font-weight:800;margin:5px 0 15px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#0b1a22;border-radius:14px;padding:12px}.stat b{display:block;margin-top:5px;font-size:18px}.green{color:var(--green)}.red{color:var(--red)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.row+.row{margin-top:12px}.tx{display:flex;align-items:center;gap:10px;min-width:0}.txtext{min-width:0}.txtext b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txtext small{color:var(--muted)}.icon{width:38px;height:38px;border-radius:12px;background:#10212a;display:grid;place-items:center;font-weight:800;flex:none}
+nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(430px,100%);height:72px;background:#081219ee;border-top:1px solid #142830;display:flex;justify-content:space-around;align-items:center}
+nav button{background:none;border:0;color:var(--muted);font-size:11px;padding:8px}.navactive{color:var(--green)!important;font-weight:700}
+.fab{position:fixed;right:max(calc((100vw - 430px)/2 + 18px),18px);bottom:84px;width:56px;height:56px;border:0;border-radius:50%;background:var(--green);color:#03120d;font-size:30px;font-weight:800}
+button{font:inherit}.primary{border:0;border-radius:12px;padding:12px 15px;background:var(--green);color:#03120d;font-weight:800}.secondary{border:1px solid #1c343e;border-radius:12px;padding:11px 14px;background:#0b1a22;color:var(--text)}
+input,select{width:100%;background:#08151c;border:1px solid #1b333d;color:var(--text);border-radius:12px;padding:12px;margin-top:6px}.formrow{margin:10px 0}
+.modal{position:fixed;inset:0;background:#0009;display:flex;align-items:flex-end;justify-content:center;z-index:5}.sheet{width:min(430px,100%);background:#09151d;border:1px solid #19313b;border-radius:22px 22px 0 0;padding:20px 16px 28px}.actions{display:flex;gap:10px;margin-top:15px}.actions>*{flex:1}.hidden{display:none}
+.progress{height:8px;background:#14252c;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--green)}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app"><header><div class="logo">FinanPro <span>V2</span></div><div class="avatar">MW</div></header><main id="screen"></main></div>
+<button class="fab" onclick="openAdd()">+</button>
+<nav><button id="n-home" onclick="show('home')">⌂<br>Inicio</button><button id="n-mov" onclick="show('mov')">↕<br>Movimientos</button><button id="n-goals" onclick="show('goals')">◎<br>Metas</button><button id="n-more" onclick="show('more')">☰<br>Más</button></nav>
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeAdd()"><div class="sheet">
+<h2 style="margin-top:0">Nuevo movimiento</h2>
+<div class="formrow"><label>Tipo</label><select id="type"><option value="expense">Gasto</option><option value="income">Ingreso</option></select></div>
+<div class="formrow"><label>Descripción</label><input id="desc" placeholder="Ej. Alimentación"></div>
+<div class="formrow"><label>Monto (S/)</label><input id="amount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+<div class="formrow"><label>Categoría</label><select id="cat"><option>Alimentación</option><option>Transporte</option><option>Vivienda</option><option>Servicios</option><option>Salud</option><option>Educación</option><option>Entretenimiento</option><option>Trabajo</option><option>Otros</option></select></div>
+<div class="formrow"><label>Fecha</label><input id="date" type="date"></div>
+<div class="actions"><button class="secondary" onclick="closeAdd()">Cancelar</button><button class="primary" onclick="saveTx()">Guardar</button></div>
+</div></div>
+<script>
+const KEY='finanpro_transactions_v1', GOALKEY='finanpro_goals_v1';
+let tx=JSON.parse(localStorage.getItem(KEY)||'[]'), goals=JSON.parse(localStorage.getItem(GOALKEY)||'[]');
+if(!goals.length){goals=[{name:'Suzuki Jimny',target:45000,saved:18500}];localStorage.setItem(GOALKEY,JSON.stringify(goals))}
+function money(n){return 'S/ '+Number(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function totals(){let i=tx.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),e=tx.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);return{income:i,expense:e,balance:i-e}}
+function show(p){document.querySelectorAll('nav button').forEach(b=>b.classList.remove('navactive'));document.getElementById('n-'+p)?.classList.add('navactive');p==='home'?home():p==='mov'?movements():p==='goals'?goalsPage():more()}
+function txRow(x){return `<div class="row"><div class="tx"><div class="icon">${x.type==='income'?'↗':'↘'}</div><div class="txtext"><b>${esc(x.desc)}</b><small>${esc(x.cat)} · ${esc(x.date)}</small></div></div><strong class="${x.type==='income'?'green':'red'}">${x.type==='income'?'+':'-'}${money(x.amount)}</strong></div>`}
+function home(){let t=totals(),r=[...tx].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);document.getElementById('screen').innerHTML=`<div class="muted">Hola, Marcos 👋</div><h1>Tu dinero</h1><div class="card hero"><div class="label">Disponible</div><div class="amount">${money(t.balance)}</div><div class="stats"><div class="stat"><span class="label">Ingresos</span><b class="green">${money(t.income)}</b></div><div class="stat"><span class="label">Gastos</span><b class="red">${money(t.expense)}</b></div></div></div><div class="card"><div class="row"><div><div class="label">Patrimonio registrado</div><b style="font-size:22px">${money(t.balance)}</b></div><span class="icon">S/</span></div></div><h3>Últimos movimientos</h3><div class="card">${r.length?r.map(txRow).join(''):'<div class="empty">Aún no tienes movimientos.<br>Presiona + para registrar el primero.</div>'}</div><div class="card"><b>Diagnóstico financiero</b><p class="muted">${t.income?(t.expense/t.income>.8?'Tus gastos están consumiendo gran parte de tus ingresos.':'Vas bien: estás gastando menos de lo que ingresas.'):'Registra ingresos y gastos para comenzar.'}</p></div>`}
+function movements(){let l=[...tx].sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('screen').innerHTML=`<h1>Movimientos</h1><div class="muted">Ingresos y gastos guardados en este teléfono.</div><div class="card">${l.length?l.map(x=>txRow(x)+`<button class="secondary" style="width:100%;margin-top:8px" onclick="delTx('${x.id}')">Eliminar</button>`).join(''):'<div class="empty">No hay movimientos todavía.</div>'}</div>`}
+function goalsPage(){document.getElementById('screen').innerHTML=`<h1>Metas</h1><div class="muted">Convierte tus objetivos en números.</div>${goals.map((g,i)=>{let p=Math.min(100,g.saved/g.target*100);return `<div class="card"><div class="row"><b>${esc(g.name)}</b><b class="green">${p.toFixed(0)}%</b></div><div class="progress" style="margin:12px 0 8px"><i style="width:${p}%"></i></div><div class="row"><span class="muted">${money(g.saved)}</span><span class="muted">Meta ${money(g.target)}</span></div><button class="primary" style="width:100%;margin-top:12px" onclick="contribute(${i})">Agregar ahorro</button></div>`}).join('')}`}
+function more(){document.getElementById('screen').innerHTML=`<h1>FinanPro</h1><div class="muted">Herramientas</div><div class="card"><b>🇵🇪 Modo Perú</b><p class="muted">Soles, Yape, Plin, efectivo y tarjetas.</p></div><div class="card"><b>Versión 1.1.0</b><p class="muted">Registro de ingresos/gastos, movimientos, diagnóstico básico y metas.</p></div>`}
+function openAdd(){modal.classList.remove('hidden');date.value=new Date().toISOString().slice(0,10)} function closeAdd(){modal.classList.add('hidden')}
+function saveTx(){let d=desc.value.trim(),a=Number(amount.value);if(!d||!a){alert('Completa descripción y monto.');return}tx.push({id:Date.now().toString(),type:type.value,desc:d,amount:a,cat:cat.value,date:date.value||new Date().toISOString().slice(0,10)});localStorage.setItem(KEY,JSON.stringify(tx));closeAdd();show('home')}
+function delTx(id){tx=tx.filter(x=>x.id!==id);localStorage.setItem(KEY,JSON.stringify(tx));movements()}
+function contribute(i){let n=Number(prompt('¿Cuánto quieres agregar?','100'));if(n>0){goals[i].saved+=n;localStorage.setItem(GOALKEY,JSON.stringify(goals));goalsPage()}}
+show('home');
+</script>
+</body></html>
