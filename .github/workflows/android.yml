@@ -10,29 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - uses: actions/setup-java@v4
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
 
-      - run: npm install
-      - run: npm run build
-      - run: npx cap add android
-      - run: npx cap sync android
+      - name: Instalar dependencias
+        run: npm install
 
-      - name: Build debug APK
+      - name: Construir aplicación web
+        run: npm run build
+
+      - name: Agregar plataforma Android
+        run: npx cap add android
+
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
+
+      - name: Construir APK
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Subir APK
+        uses: actions/upload-artifact@v4
         with:
           name: FinanPro-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
