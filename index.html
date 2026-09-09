@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050b10"><title>FinanPro V2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050b10;color:#f5fbff;font-family:Arial,sans-serif}
+.app{max-width:430px;margin:auto;min-height:100vh;padding:18px 16px 92px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.logo{font-size:22px;font-weight:800}.v2{color:#00e39a}.avatar{width:38px;height:38px;border-radius:50%;background:#00e39a;color:#03100c;display:grid;place-items:center;font-weight:800}
+h1{font-size:25px;margin:4px 0}.muted{color:#78939f}.card{background:#09151d;border:1px solid #122630;border-radius:18px;padding:18px;margin:12px 0}
+.label{font-size:13px;color:#78939f}.money{font-size:31px;font-weight:800;margin:7px 0 16px}.green{color:#00e39a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{background:#0c1a22;border-radius:14px;padding:13px}.mini b{display:block;font-size:18px;margin-top:5px}
+.alert{border-left:3px solid #ffae2e}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:13px 0}
+.pill{padding:6px 9px;border-radius:10px;background:#10232c;font-size:12px}.progress{height:9px;background:#12242c;border-radius:10px;overflow:hidden}.bar{height:100%;background:#00e39a;width:41%}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:#071118ee;backdrop-filter:blur(14px);border-top:1px solid #15303a;display:flex;justify-content:space-around;padding:12px 6px}
+nav button{background:none;border:0;color:#78939f;font-size:11px}nav button.active{color:#00e39a}.icon{font-size:20px;display:block;margin-bottom:3px}
+.fab{position:fixed;right:max(18px,calc((100vw - 430px)/2 + 18px));bottom:78px;width:58px;height:58px;border:0;border-radius:50%;background:#00e39a;color:#03100c;font-size:30px;font-weight:800}
+</style></head>
+<body><div class="app">
+<header><div class="logo">FinanPro <span class="v2">V2</span></div><div class="avatar">MW</div></header>
+<div class="muted">Inicio</div><h1>Hola, Marcos 👋</h1>
+<section class="card"><div class="label">Patrimonio total</div><div class="money">S/ 8,450.00</div>
+<div class="grid"><div class="mini"><span class="label">Disponible</span><b class="green">S/ 5,280</b></div><div class="mini"><span class="label">Por recibir</span><b>S/ 1,200</b></div>
+<div class="mini"><span class="label">Por pagar</span><b>S/ 1,970</b></div><div class="mini"><span class="label">Proyección</span><b>S/ 7,820</b></div></div></section>
+<section class="card alert"><div class="label">⚠️ Atención</div><div class="row"><span>Transporte aumentó <b>27%</b> este mes</span><span class="pill">Ver</span></div></section>
+<section class="card"><div class="row"><div><b>Próximos pagos</b><div class="muted">Servicios y cuotas</div></div><span class="pill">3 pendientes</span></div>
+<div class="row"><span>Internet</span><b>S/ 89</b></div><div class="row"><span>Tarjeta</span><b>S/ 420</b></div><div class="row"><span>Cuota</span><b>S/ 350</b></div></section>
+<section class="card"><div class="row"><div><b>🎯 Suzuki Jimny</b><div class="muted">Meta de ahorro</div></div><b class="green">41%</b></div>
+<div class="progress"><div class="bar"></div></div><div class="row"><span>S/ 18,500</span><span class="muted">S/ 45,000</span></div></section>
+</div>
+<button class="fab">+</button><nav>
+<button class="active"><span class="icon">⌂</span>Inicio</button><button><span class="icon">◉</span>Finanzas</button>
+<button><span class="icon">↕</span>Movimientos</button><button><span class="icon">🎯</span>Metas</button><button><span class="icon">☰</span>Más</button>
+</nav></body></html>
