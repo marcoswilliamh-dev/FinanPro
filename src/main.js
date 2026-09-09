@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import './style.css';
 
 const SUPABASE_URL = 'https://jbycxsqgyzdksxsbitfu.supabase.co';
@@ -7,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
   session: null, profile: null, accounts: [], categories: [], transactions: [], goals: [],
-  page: 'home', type: 'expense', filter: 'all', loading: true, streak: 7,
+  page: 'home', type: 'expense', filter: 'all', loading: true, streak: 7, alerts: [],
 };
 const app = document.querySelector('#app');
 window.state = state;
@@ -38,7 +39,7 @@ function levelData(){
 }
 
 async function init(){
-  app.innerHTML = `<div class="splash"><img src="/icon.png"><b>Moni <i>V2</i></b><span>Tu dinero, tus decisiones.</span></div>`;
+  app.innerHTML = `<div class="splash"><img src="/icon.png"><b>Numa <i>V2</i></b><span>Tu dinero, tus decisiones.</span></div>`;
   const {data,error}=await supabase.auth.getSession();
   if(error){showAuth(error.message);return;}
   state.session=data.session;
@@ -46,13 +47,18 @@ async function init(){
   await loadData();
 }
 function showAuth(err=''){
-  app.innerHTML = `<div class="auth-page"><div class="auth-art"><img src="/icon.png"><h1>Moni <mark>V2</mark></h1><p>No solo controles tu dinero.<br><b>Sube de nivel con él.</b></p></div><div class="auth-card"><h2>Tu aventura financiera empieza ahora</h2>${err?`<div class="error">${esc(err)}</div>`:''}<button class="primary big" id="enterBtn">👤 Entrar a Moni</button><button class="outline big" id="demoBtn">✨ Ver cómo funciona</button><small>🔒 Cuenta anónima del dispositivo · tus datos quedan asociados a esta instalación.</small></div></div>`;
+  app.innerHTML = `<div class="auth-page"><div class="auth-art"><img src="/icon.png"><h1>Numa <mark>V2</mark></h1><p>No solo controles tu dinero.<br><b>Sube de nivel con él.</b></p></div><div class="auth-card"><h2>Tu aventura financiera empieza ahora</h2>${err?`<div class="error">${esc(err)}</div>`:''}<button class="primary big" id="enterBtn">👤 Entrar a Numa</button><button class="outline big" id="demoBtn">✨ Ver cómo funciona</button><small>🔒 Cuenta anónima del dispositivo · tus datos quedan asociados a esta instalación.</small></div></div>`;
   $('enterBtn').onclick=async()=>{ const {data,error}=await supabase.auth.signInAnonymously(); if(error){showAuth(error.message);return;} state.session=data.session; await loadData(); };
   $('demoBtn').onclick=()=>toast('El modo demo se habilita después de tu primera sincronización.');
 }
 
 async function loadData(){
-  state.loading=true; renderShell();
+  state.loading=true;
+  try { state.alerts = JSON.parse(localStorage.getItem('numa_alerts') || '[]'); } catch { state.alerts = []; }
+  state.alerts = state.alerts.map((a,i)=>({id:a.id||Date.now()+i, title:a.title||'Alerta', date:a.date||today(), time:a.time||'09:00', note:a.note||'', done:!!a.done}));
+  saveAlerts();
+  await prepareNotifications();
+  renderShell();
   const uid=state.session.user.id;
   const [a,c,t,g,p]=await Promise.all([
     supabase.from('accounts').select('*').eq('user_id',uid).eq('is_active',true).order('created_at'),
@@ -75,10 +81,42 @@ async function loadData(){
   state.loading=false; renderShell();
 }
 
+async function prepareNotifications(){
+  try {
+    await LocalNotifications.createChannel({id:'numa-alerts',name:'Alertas NUMA',description:'Recordatorios financieros de NUMA',importance:5,sound:'default'});
+    const p=await LocalNotifications.checkPermissions();
+    if(p.display==='prompt') await LocalNotifications.requestPermissions();
+  } catch(e) { /* Web/PWA: se usa fallback cuando el navegador lo permite. */ }
+}
+function notificationId(id){ return Math.abs(Number(id)||Date.now()) % 2147483647; }
+async function scheduleAlertNotification(alert){
+  const when=new Date(`${alert.date}T${alert.time||'09:00'}:00`);
+  if(Number.isNaN(when.getTime()) || when.getTime()<=Date.now() || alert.done) return;
+  try{
+    await LocalNotifications.cancel({notifications:[{id:notificationId(alert.id)}]});
+    await LocalNotifications.schedule({notifications:[{id:notificationId(alert.id),title:`🔔 ${alert.title}`,body:alert.note||'Tienes una alerta pendiente en NUMA.',schedule:{at:when,allowWhileIdle:true},channelId:'numa-alerts',extra:{alertId:alert.id}}]});
+  }catch(e){
+    try{
+      if('Notification' in window && Notification.permission==='default') await Notification.requestPermission();
+    }catch{}
+  }
+}
+async function cancelAlertNotification(alert){ try{ await LocalNotifications.cancel({notifications:[{id:notificationId(alert.id)}]}); }catch{} }
+
+function saveAlerts(){ localStorage.setItem('numa_alerts', JSON.stringify(state.alerts)); }
+function alertCount(){ return state.alerts.filter(a=>!a.done).length; }
+window.fpOpenAlerts=()=>openAlertsModal();
+window.fpOpenMission=()=>openMissionModal();
+window.fpOpenStats=()=>openStatsModal();
+window.fpOpenChallenges=()=>openChallengesModal();
+window.fpOpenSecurity=()=>openSecurityModal();
+window.fpToggleAlert=async idx=>{ if(state.alerts[idx]){state.alerts[idx].done=!state.alerts[idx].done; if(state.alerts[idx].done) await cancelAlertNotification(state.alerts[idx]); else await scheduleAlertNotification(state.alerts[idx]); saveAlerts();openAlertsModal();} };
+window.fpDeleteAlert=async idx=>{if(state.alerts[idx]) await cancelAlertNotification(state.alerts[idx]);state.alerts.splice(idx,1);saveAlerts();openAlertsModal();};
+
 function renderShell(){
   if(!state.session){return;}
   app.innerHTML = `<div class="app-shell">
-    <header class="topbar"><button class="brand" onclick="window.fpNav('home')"><span>Moni</span> <b>V2</b></button><div class="top-actions"><button onclick="window.fpNav('more')">⚙️</button><div class="avatar">M</div></div></header>
+    <header class="topbar"><button class="brand" onclick="window.fpNav('home')"><span>Numa</span> <b>V2</b></button><div class="top-actions"><button onclick="window.fpOpenAlerts()">🔔<em class="notif-dot">${alertCount()||''}</em></button><div class="avatar">M</div></div></header>
     <main id="screen"></main>
     <nav class="bottom-nav">
       ${navBtn('home','⌂','Inicio')}${navBtn('moves','↕','Movimientos')}
@@ -112,13 +150,13 @@ function homeHTML(s,l){
   const g=state.goals[0], gp=g?Math.min(100,Number(g.saved_amount)/Number(g.target_amount)*100):0;
   const recent=state.transactions.slice(0,4);
   const monthExp=s.exp, prev=monthExp*1.08;
-  return `<div class="page-head"><div><div class="hello">Hola, Marcos 👋</div><small>Aquí está tu resumen financiero</small></div><button class="round">🔔</button></div>
+  return `<div class="page-head"><div><div class="hello-monster"><img src="/icon.png" alt="Numa"><div><b>Numa</b><small>Tu compañero financiero</small></div></div></div><button class="round" onclick="window.fpOpenAlerts()">🔔 ${alertCount()?`<b>${alertCount()}</b>`:''}</button></div>
   <section class="hero-yellow"><div class="hero-top"><div><span class="mini">NIVEL ${l.level} · CONSTRUCTOR FINANCIERO</span><h1>Tu aventura<br>financiera</h1></div><div class="mascot">👑</div></div><div class="xp-label"><b>⭐ XP ${l.xp.toLocaleString('es-PE')} / 500</b><b>${l.pct}%</b></div><div class="xp-track"><i style="width:${l.pct}%"></i></div></section>
-  <section class="dark-card"><div class="section-line"><div><span class="mini">PATRIMONIO TOTAL</span><strong class="big-money">${money(s.balance)}</strong></div><span class="eye">◉</span></div><div class="stats3"><div><small>Disponible</small><b>${money(s.balance)}</b></div><div><small>Por recibir</small><b>${money(0)}</b></div><div><small>Por pagar</small><b class="red">${money(0)}</b></div></div></section>
-  <div class="quick-grid"><button onclick="window.fpNav('more')"><span>💳</span>Cuentas</button><button onclick="window.fpNav('goals')"><span>🎯</span>Metas</button><button onclick="window.fpNav('more')"><span>▣</span>Tarjetas</button><button onclick="window.fpNav('more')"><span>•••</span>Más</button></div>
-  <section class="mission-card"><div class="section-line"><h2>🎯 Misión del día</h2><span class="reward">+80 XP</span></div><p>Registra 3 movimientos y ahorra S/20. <b>¡Tú puedes!</b></p><div class="mission-row"><span>○ Registrar movimientos</span><b>${Math.min(3,state.transactions.length)}/3</b></div><div class="mission-row"><span>○ Ahorrar S/20</span><b>0%</b></div><button class="yellow-btn" onclick="window.fpOpenMove()">Ver misión →</button></section>
-  ${s.exp>s.inc && s.exp>0 ? `<section class="alert-card"><b>⚠️ Atención</b><span>Tus gastos superan tus ingresos. Tu siguiente misión es recuperar el equilibrio.</span><button onclick="window.fpNav('plan')">Analizar</button></section>` : `<section class="success-card"><b>🔥 Racha de ${state.streak} días</b><span>Tu disciplina está creciendo. Mantén el hábito.</span><button onclick="window.fpNav('plan')">Ver logros</button></section>`}
-  <section class="goal-preview"><div class="section-line"><h2>🚙 Suzuki Jimny</h2><b>${gp.toFixed(0)}%</b></div><div class="goal-amount"><b>${money(g?.saved_amount)}</b><span>/ ${money(g?.target_amount)}</span></div><div class="progress"><i style="width:${gp}%"></i></div><small>Te faltan ${money(Math.max(0,Number(g?.target_amount||0)-Number(g?.saved_amount||0)))}</small><button class="outline" onclick="window.fpNav('plan')">Ver misión completa</button></section>
+  <section class="dark-card"><div class="section-line"><div><span class="mini">PATRINUMAO TOTAL</span><strong class="big-money">${money(s.balance)}</strong></div><span class="eye">◉</span></div><div class="stats3"><div><small>Disponible</small><b>${money(s.balance)}</b></div><div><small>Por recibir</small><b>${money(0)}</b></div><div><small>Por pagar</small><b class="red">${money(0)}</b></div></div></section>
+  <div class="quick-grid"><button onclick="window.fpOpenAccount()"><span>💳</span>Cuentas</button><button onclick="window.fpNav('goals')"><span>🎯</span>Metas</button><button onclick="window.fpOpenAccount()"><span>▣</span>Tarjetas</button><button onclick="window.fpNav('more')"><span>•••</span>Más</button></div>
+  <section class="mission-card"><div class="section-line"><h2>🎯 Misión del día</h2><span class="reward">+80 XP</span></div><p>Registra 3 movimientos y ahorra S/20. <b>¡Tú puedes!</b></p><div class="mission-row"><span>○ Registrar movimientos</span><b>${Math.min(3,state.transactions.length)}/3</b></div><div class="mission-row"><span>○ Ahorrar S/20</span><b>0%</b></div><button class="yellow-btn" onclick="window.fpOpenMission()">Ver misión →</button></section>
+  ${s.exp>s.inc && s.exp>0 ? `<section class="alert-card"><b>⚠️ Atención</b><span>Tus gastos superan tus ingresos. Tu siguiente misión es recuperar el equilibrio.</span><button onclick="window.fpNav('plan')">Analizar</button></section>` : `<section class="success-card"><b>🔥 Racha de ${state.streak} días</b><span>Tu disciplina está creciendo. Mantén el hábito.</span><button onclick="window.fpOpenChallenges()">Ver logros</button></section>`}
+  <section class="goal-preview"><div class="section-line"><h2>🚙 Suzuki Jimny</h2><b>${gp.toFixed(0)}%</b></div><div class="goal-amount"><b>${money(g?.saved_amount)}</b><span>/ ${money(g?.target_amount)}</span></div><div class="progress"><i style="width:${gp}%"></i></div><small>Te faltan ${money(Math.max(0,Number(g?.target_amount||0)-Number(g?.saved_amount||0)))}</small><button class="outline" onclick="window.fpOpenMission()">Ver misión completa</button></section>
   <section class="dark-card"><div class="section-line"><h2>Últimos movimientos</h2><button class="link" onclick="window.fpNav('moves')">Ver todos</button></div>${recent.length?recent.map(moveRow).join(''):'<div class="empty">Aún no hay movimientos.<br>Pulsa + para comenzar.</div>'}</section>`;
 }
 function moveRow(t){const income=t.type==='income';return `<div class="move-row"><div class="move-icon ${income?'in':'out'}">${income?'↗':'↘'}</div><div class="move-main"><b>${esc(t.merchant||'Movimiento')}</b><small>${esc(categoryName(t.category_id))} · ${fmtDate(t.transaction_date)}</small></div><strong class="${income?'green':'red'}">${income?'+':'-'}${money(t.amount)}</strong></div>`}
@@ -138,22 +176,63 @@ function planHTML(s,l){
   const cats={};state.transactions.filter(t=>t.type==='expense').forEach(t=>cats[categoryName(t.category_id)]=(cats[categoryName(t.category_id)]||0)+Number(t.amount));
   const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5); const max=catRows[0]?.[1]||1;
   return `<div class="page-title-row"><div><h1>Planificar</h1><small>Convierte tus decisiones en progreso</small></div></div>
-  <div class="subnav"><button class="sel">Resumen</button><button onclick="showStats()">Estadísticas</button><button onclick="showChallenges()">Desafíos</button></div>
-  <section class="dark-card"><div class="section-line"><h2>🗺️ Mapa de niveles</h2><span class="badge-yellow">Nivel ${l.level}</span></div><div class="level-map">${[['🌱','Aprendiz','Conocer tu dinero',true],['🪙','Ahorrador','Primeros S/500',l.score>500],['🛡️','Protegido','Fondo de emergencia',l.score>1500],['⚔️','Guerrero','Dominar las deudas',l.score>3000],['🏗️','Constructor','Aumentar patrimonio',l.score>5000],['👑','Maestro','Libertad financiera',l.level>=10]].map(x=>`<div class="level-node ${x[3]?'done':''}"><span>${x[0]}</span><div><b>${x[1]}</b><small>${x[2]}</small></div>${x[3]?'✓':'🔒'}</div>`).join('')}</div></section>
+  <div class="subnav"><button class="sel" onclick="window.fpNav('plan')">Resumen</button><button onclick="window.fpOpenStats()">Estadísticas</button><button onclick="window.fpOpenChallenges()">Desafíos</button></div>
+  <section class="dark-card"><div class="section-line"><h2>🗺️ Mapa de niveles</h2><span class="badge-yellow">Nivel ${l.level}</span></div><div class="level-map">${[['🌱','Aprendiz','Conocer tu dinero',true],['🪙','Ahorrador','Primeros S/500',l.score>500],['🛡️','Protegido','Fondo de emergencia',l.score>1500],['⚔️','Guerrero','Dominar las deudas',l.score>3000],['🏗️','Constructor','Aumentar patrinumao',l.score>5000],['👑','Maestro','Libertad financiera',l.level>=10]].map(x=>`<div class="level-node ${x[3]?'done':''}"><span>${x[0]}</span><div><b>${x[1]}</b><small>${x[2]}</small></div>${x[3]?'✓':'🔒'}</div>`).join('')}</div></section>
   <section class="dark-card"><div class="section-line"><h2>🚙 Misión Suzuki Jimny</h2><b>${gp.toFixed(0)}%</b></div><div class="goal-amount"><b>${money(g?.saved_amount)}</b><span>/ ${money(g?.target_amount)}</span></div><div class="progress"><i style="width:${gp}%"></i></div><p class="muted">Cada ahorro te acerca al siguiente checkpoint.</p><button class="yellow-btn" onclick="window.fpContribute('${g?.id}')">💰 Agregar ahorro +25 XP</button></section>
   <section class="dark-card"><div class="section-line"><h2>📊 Gastos por categoría</h2><span class="badge">Este periodo</span></div>${catRows.length?catRows.map(([n,v])=>`<div class="bar-row"><div><span>${esc(n)}</span><b>${money(v)}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join(''):'<div class="empty">Registra gastos para descubrir tus patrones.</div>'}</section>
-  <section class="yellow-callout"><b>🧠 Consejo de Moni</b><p>No se trata de gastar menos por gastar menos. Se trata de conseguir que cada sol tenga un propósito.</p></section>`;
+  <section class="yellow-callout"><b>🧠 Consejo de Numa</b><p>No se trata de gastar menos por gastar menos. Se trata de conseguir que cada sol tenga un propósito.</p></section>`;
 }
-window.showStats=()=>toast('📊 Estadísticas detalladas: pronto tendrás gráficos por mes y categoría.');
-window.showChallenges=()=>toast('🎯 Completa las misiones desde Inicio para ganar XP.');
+window.showStats=()=>openStatsModal();
+window.showChallenges=()=>openChallengesModal();
 
 function moreHTML(){
   return `<div class="page-title-row"><div><h1>Más</h1><small>Tu centro de control</small></div></div>
-  <section class="profile-card"><div class="profile-avatar">M</div><div><b>Marcos</b><small>Constructor financiero · Nivel ${levelData().level}</small></div><span>›</span></section>
-  <section class="menu-card"><button onclick="window.fpOpenAccount()"><span>💳</span><div><b>Cuentas y tarjetas</b><small>${state.accounts.length} cuenta(s) conectada(s)</small></div><i>›</i></button><button onclick="window.fpNav('plan')"><span>🎯</span><div><b>Metas</b><small>${state.goals.length} misión(es)</small></div><i>›</i></button><button onclick="window.fpNav('plan')"><span>🏆</span><div><b>Desafíos y logros</b><small>Sube de nivel</small></div><i>›</i></button><button><span>🔔</span><div><b>Notificaciones</b><small>Alertas financieras</small></div><i>›</i></button><button><span>🔐</span><div><b>Seguridad</b><small>Cuenta anónima del dispositivo</small></div><i>›</i></button></section>
+  <section class="profile-card" onclick="window.fpOpenSecurity()"><div class="profile-avatar"><img src="/icon.png" alt="Numa"></div><div><b>Numa</b><small>Constructor financiero · Nivel ${levelData().level}</small></div><span>›</span></section>
+  <section class="menu-card"><button onclick="window.fpOpenAccount()"><span>💳</span><div><b>Cuentas y tarjetas</b><small>${state.accounts.length} cuenta(s) conectada(s)</small></div><i>›</i></button><button onclick="window.fpNav('plan')"><span>🎯</span><div><b>Metas</b><small>${state.goals.length} misión(es)</small></div><i>›</i></button><button onclick="window.fpOpenChallenges()"><span>🏆</span><div><b>Desafíos y logros</b><small>Sube de nivel</small></div><i>›</i></button><button onclick="window.fpOpenAlerts()"><span>🔔</span><div><b>Notificaciones</b><small>${alertCount()} alerta(s) activas</small></div><i>›</i></button><button onclick="window.fpOpenSecurity()"><span>🔐</span><div><b>Seguridad</b><small>Cuenta anónima del dispositivo</small></div><i>›</i></button></section>
   <section class="dark-card"><div class="section-line"><h2>☁️ Supabase</h2><span class="connected">● Conectado</span></div><p class="muted">Tus cuentas, movimientos y metas están sincronizados en la nube.</p></section>
   <button class="logout" onclick="window.fpLogout()">Cerrar sesión</button>
-  <small class="version">Moni · Game Finance · v3.1.0</small>`;
+  <small class="version">Numa · Game Finance · v3.1.4</small>`;
+}
+
+
+function openMissionModal(){
+  const doneMoves=Math.min(3,state.transactions.length), saved=state.goals.reduce((a,g)=>a+Number(g.saved_amount||0),0);
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>🎯 Misión del día</h2><button onclick="closeModal()">✕</button></div><div class="mission-detail"><div><b>Registrar 3 movimientos</b><span>${doneMoves}/3 completados</span></div><div class="mission-progress"><i style="width:${doneMoves/3*100}%"></i></div><div><b>Ahorrar S/20</b><span>${saved>=20?'Completado':'Pendiente'}</span></div><div class="mission-progress"><i style="width:${saved>=20?100:0}%"></i></div></div><button class="primary big" onclick="window.fpOpenMove()">＋ Registrar movimiento</button><button class="outline big" onclick="window.fpContribute('${state.goals[0]?.id||''}')">💰 Registrar ahorro</button></div></div>`;
+}
+function openStatsModal(){
+  const c=calc(), total=c.inc+c.exp, rate=c.inc?Math.round((c.inc-c.exp)/c.inc*100):0;
+  const cats={};state.transactions.filter(t=>t.type==='expense').forEach(t=>cats[categoryName(t.category_id)]=(cats[categoryName(t.category_id)]||0)+Number(t.amount));
+  const rows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,6);const max=rows[0]?.[1]||1;
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>📊 Estadísticas</h2><button onclick="closeModal()">✕</button></div><div class="stats3"><div><small>Ingresos</small><b>${money(c.inc)}</b></div><div><small>Gastos</small><b>${money(c.exp)}</b></div><div><small>Balance</small><b>${money(c.net)}</b></div></div><p class="muted">Tasa de ahorro: <b>${rate}%</b> · ${state.transactions.length} movimiento(s)</p><h3>Gastos por categoría</h3>${rows.length?rows.map(([n,v])=>`<div class="bar-row"><div><span>${esc(n)}</span><b>${money(v)}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join(''):'<div class="empty">Aún no hay gastos.</div>'}</div></div>`;
+}
+function openChallengesModal(){
+  const l=levelData(), missions=[['📝','Registra 3 movimientos',Math.min(3,state.transactions.length),3],['💰','Ahorra S/20',state.goals.some(g=>Number(g.saved_amount||0)>=20)?1:0,1],['🎯','Crea una meta',Math.min(1,state.goals.length),1],['🔥','Mantén tu racha',Math.min(7,state.streak),7]];
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>🏆 Desafíos y logros</h2><button onclick="closeModal()">✕</button></div><p class="muted">Nivel ${l.level} · ${l.xp} XP actuales</p>${missions.map(m=>`<div class="challenge-row"><span>${m[0]}</span><div><b>${m[1]}</b><small>${m[2]}/${m[3]}</small><div class="mission-progress"><i style="width:${Math.min(100,m[2]/m[3]*100)}%"></i></div></div>${m[2]>=m[3]?'🏆':'🔒'}</div>`).join('')}<button class="primary big" onclick="window.fpOpenMission()">Ver misión del día</button></div></div>`;
+}
+function calendarHTML(){
+  const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
+  const first=new Date(y,m,1).getDay(); const offset=(first+6)%7; const days=new Date(y,m+1,0).getDate();
+  const names=['L','M','X','J','V','S','D'];
+  let cells=names.map(n=>`<div class="cal-head">${n}</div>`).join('');
+  for(let i=0;i<offset;i++) cells+='<div class="cal-day muted-day"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const count=state.alerts.filter(a=>a.date===ds&&!a.done).length;
+    cells+=`<button class="cal-day ${ds===today()?'today':''}" onclick="openAddAlertModal('${ds}')"><b>${d}</b>${count?`<i>${count}</i>`:''}</button>`;
+  }
+  return `<section class="calendar-card"><div class="calendar-title"><b>${now.toLocaleDateString('es-PE',{month:'long',year:'numeric'})}</b><small>Toca un día para crear una alerta</small></div><div class="calendar-grid">${cells}</div></section>`;
+}
+function openAlertsModal(){
+  const rows=state.alerts.length?state.alerts.map((a,i)=>`<div class="alert-row ${a.done?'done':''}"><button onclick="window.fpToggleAlert(${i})">${a.done?'☑':'☐'}</button><div><b>${esc(a.title)}</b><small>📅 ${esc(fmtDate(a.date))} · ⏰ ${esc(a.time||'09:00')} · ${esc(a.note||'')}</small></div><button onclick="window.fpDeleteAlert(${i})">🗑</button></div>`).join(''):'<div class="empty">No tienes alertas. Crea una para no olvidar pagos, ahorros o fechas importantes.</div>';
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>🔔 Mis alertas</h2><button onclick="closeModal()">✕</button></div>${calendarHTML()}<h3>Próximas alertas</h3>${rows}<button class="primary big" onclick="openAddAlertModal()">＋ Añadir alerta</button></div></div>`;
+}
+function openAddAlertModal(prefill=today()){
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>🔔 Nueva alerta</h2><button onclick="openAlertsModal()">←</button></div><label>Título <input id="alTitle" placeholder="Ej. Pagar tarjeta CMR"></label><label>Fecha <input id="alDate" type="date" value="${prefill}"></label><label>Hora <input id="alTime" type="time" value="09:00"></label><label>Nota <input id="alNote" placeholder="Ej. Revisar antes de las 6 pm"></label><div class="alert-card"><b>📲 Notificación</b><span>NUMA te avisará en el dispositivo en la fecha y hora elegidas.</span></div><button class="primary big" onclick="saveAlert()">Guardar y programar alerta</button></div></div>`;
+}
+window.openAddAlertModal=openAddAlertModal;
+window.saveAlert=async()=>{const title=$('alTitle').value.trim(),date=$('alDate').value||today(),time=$('alTime').value||'09:00',note=$('alNote').value.trim();if(!title)return toast('Escribe un título para la alerta',false);const alert={id:Date.now(),title,date,time,note,done:false};state.alerts.unshift(alert);saveAlerts();await scheduleAlertNotification(alert);toast('🔔 Alerta programada');openAlertsModal();};
+function openSecurityModal(){
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="sheet"><div class="sheet-head"><h2>🔐 Seguridad</h2><button onclick="closeModal()">✕</button></div><p>Numa está usando una cuenta anónima asociada a esta instalación.</p><div class="alert-card"><b>⚠️ Importante</b><span>Si cierras sesión, borras los datos de la app o cambias de dispositivo, esta cuenta anónima no se puede recuperar todavía.</span></div><button class="outline big" onclick="closeModal()">Entendido</button></div></div>`;
 }
 
 function openMoveModal(){
