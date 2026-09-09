@@ -105,7 +105,7 @@ async function loadAll(){
 function totals(){
   return tx.reduce((o,x)=>{if(x.type==='income')o.i+=Number(x.amount);if(x.type==='expense')o.e+=Number(x.amount);return o},{i:0,e:0});
 }
-function show(p){
+window.show=(p)=>{
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('navactive'));
   $('n-'+p)?.classList.add('navactive');
   if(p==='home')home(); else if(p==='mov')movements(); else if(p==='goals')goalsPage(); else more();
