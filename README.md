@@ -1,4 +1,4 @@
-# Moni — Real 3.0.0
+# Numa — Game Finance 3.1.3
 
 Aplicación Android de finanzas gamificada, inspirada en el estilo visual aprobado: crema + amarillo + negro, mascota minimalista, misiones, niveles, XP, metas y movimientos reales.
 
@@ -9,7 +9,7 @@ Aplicación Android de finanzas gamificada, inspirada en el estilo visual aproba
 - Tablas usadas: accounts, categories, transactions, goals, goal_contributions.
 
 ## Funciones
-- Inicio con nivel, XP, misión diaria y patrimonio.
+- Inicio con nivel, XP, misión diaria y patrinumao.
 - Movimientos: ingresos/gastos, cuentas, categorías y eliminación lógica.
 - Cuentas: crear cuentas y ver saldos.
 - Metas: Suzuki Jimny y nuevas metas, aportes reales.

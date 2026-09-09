@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.moni.app',
-  appName: 'Moni',
+  appId: 'com.numa.app',
+  appName: 'Numa',
   webDir: 'dist',
   bundledWebRuntime: false,
   android: {
