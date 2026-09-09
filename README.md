@@ -1,17 +1,8 @@
-# Numa — Game Finance 3.1.3
+# NUMA 3.2.0
 
-Aplicación Android de finanzas gamificada, inspirada en el estilo visual aprobado: crema + amarillo + negro, mascota minimalista, misiones, niveles, XP, metas y movimientos reales.
+App financiera gamificada para Android con Supabase.
 
-## Supabase
-- Proyecto: jbycxsqgyzdksxsbitfu
-- Anonymous Sign-Ins debe estar activado.
-- Usa únicamente la publishable key en el cliente.
-- Tablas usadas: accounts, categories, transactions, goals, goal_contributions.
+Incluye movimientos, categorías por tipo de movimiento, edición de registros, cuentas y tarjetas, metas, por pagar, pago automático como gasto, calendario de alertas y notificaciones locales, estadísticas, desafíos y diseño NUMA.
 
-## Funciones
-- Inicio con nivel, XP, misión diaria y patrinumao.
-- Movimientos: ingresos/gastos, cuentas, categorías y eliminación lógica.
-- Cuentas: crear cuentas y ver saldos.
-- Metas: Suzuki Jimny y nuevas metas, aportes reales.
-- Planificar: mapa de niveles y análisis de gastos.
-- Más: perfil, sincronización y seguridad.
+Supabase project: jbycxsqgyzdksxsbitfu
+Android app id: com.numa.app
